@@ -1,9 +1,6 @@
 # MAC Changer Requirements
 
-# Python version: 3.6+
-# No additional Python packages required - uses only built-in modules
+Python 3.6+
 
-# System requirements by platform:
-# Windows: PowerShell, Administrator privileges
-# Linux: ip/ifconfig commands, sudo privileges  
-# macOS: ifconfig, sudo privileges
+# No additional packages needed - uses only built-in Python modules
+# System requirements: Administrator/root privileges for MAC changing

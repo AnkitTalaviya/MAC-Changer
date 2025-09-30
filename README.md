@@ -1,318 +1,278 @@
 # Cross-Platform MAC Address Changer
 
-A comprehensive Python script that can change MAC addresses on **Windows**, **Linux**, and **macOS** systems.
+A simple, lightweight tool to change MAC addresses on Windows, Linux, and macOS systems with automatic privilege elevation.
 
-## Features
-
-- ✅ **Cross-platform support**: Windows, Linux, and macOS
-- ✅ **Multiple MAC changing methods**: Automatic fallback for different system configurations
-- ✅ **Network interface detection**: Automatically discover available network interfaces
-- ✅ **MAC address validation**: Ensures proper MAC address format
-- ✅ **Random MAC generation**: Generate cryptographically secure random MAC addresses
-- ✅ **Automatic privilege elevation**: Prompts user and automatically restarts with admin/root privileges when needed
-- ✅ **Privilege checking**: Automatically checks for required administrator/root privileges
-- ✅ **User-friendly CLI**: Easy-to-use command-line interface with helpful examples
-
-## Requirements
-
-- Python 3.6+
-- Administrator/root privileges (for MAC address changes)
-- Platform-specific tools:
-  - **Windows**: PowerShell, netsh, wmic
-  - **Linux**: ip command or ifconfig
-  - **macOS**: ifconfig, sudo
-
-## Installation
-
-1. Clone or download this repository
-2. No additional Python packages required (uses only built-in modules)
+## 🚀 Quick Start
 
 ```bash
-git clone <repository-url>
-cd mac-changer
-```
-
-## Usage
-
-### Automatic Privilege Elevation
-
-The script automatically detects when administrator/root privileges are required and offers to restart itself with the necessary permissions:
-
-```bash
-# Example: Running without admin privileges
-python mac_changer.py --interface "Wi-Fi" --random
-
-# Output:
-MAC Address Changer - Windows Platform
-==================================================
-⚠️  Administrator/root privileges required for MAC address changes!
-
-Would you like to restart this script with administrator/root privileges? (y/N): y
-Restarting with elevated privileges...
-✅ Script restarted with administrator privileges.
-```
-
-**How it works:**
-- **Windows**: Uses `ShellExecute` with "runas" verb to prompt for UAC elevation
-- **Linux/macOS**: Uses `sudo` to restart the script with root privileges
-- **Safety**: Prevents infinite loops by detecting previous elevation attempts
-
-### Basic Commands
-
-#### List all network interfaces
-```bash
-# Show all available network interfaces and their current MAC addresses
+# List all network interfaces
 python mac_changer.py --list
-```
 
-#### Change MAC address to a specific value
-```bash
-# Windows
-python mac_changer.py --interface "Wi-Fi" --mac "00:11:22:33:44:55"
+# Change to a specific MAC address
+python mac_changer.py --interface "Wi-Fi" --mac 02:11:22:33:44:55
 
-# Linux/macOS
-sudo python3 mac_changer.py --interface eth0 --mac "00:11:22:33:44:55"
-```
-
-#### Generate and use a random MAC address
-```bash
-# Windows
+# Generate and apply a random MAC address
 python mac_changer.py --interface "Wi-Fi" --random
 
-# Linux/macOS
-sudo python3 mac_changer.py --interface eth0 --random
-```
-
-#### Show current MAC address of an interface
-```bash
+# Check current MAC address
 python mac_changer.py --interface "Wi-Fi" --current
 ```
 
-#### Restore original MAC address
+## ⚡ Features
+
+- ✅ **Cross-Platform**: Windows, Linux, macOS
+- ✅ **Auto-Privilege Elevation**: Automatically requests admin/sudo
+- ✅ **Random MAC Generation**: Generates valid locally administered MACs
+- ✅ **Interface Detection**: Lists available network interfaces
+- ✅ **MAC Validation**: Ensures proper MAC address format
+- ✅ **Clean & Simple**: Lightweight with no external dependencies
+
+---
+
+## 🪟 Windows Usage
+
+### Requirements
+- **Windows 10/11** (PowerShell required)
+- **Administrator privileges** (automatically requested)
+
+### Find Your Interface
+```powershell
+python mac_changer.py --list
+```
+**Output:**
+```
+📡 Network Interfaces (Windows):
+==================================================
+🔌 Ethernet
+   MAC: E0:D5:5E:93:69:AB
+
+🔌 Wi-Fi
+   MAC: 00:E0:4C:B8:38:2F
+```
+
+### Change MAC Address
+```powershell
+# Use specific MAC
+python mac_changer.py --interface "Wi-Fi" --mac 02:AA:BB:CC:DD:EE
+
+# Use random MAC
+python mac_changer.py --interface "Wi-Fi" --random
+```
+
+### Launcher Script (Optional)
+Double-click `mac_changer_admin.bat` to run with automatic admin privileges.
+
+### Windows Notes
+- Works with built-in network adapters
+- Some USB Wi-Fi adapters may not support MAC changing
+- Requires PowerShell (included in Windows 10/11)
+- Network connection may briefly disconnect during change
+
+---
+
+## 🐧 Linux Usage
+
+### Requirements
+- **Linux distribution** with `ip` command (iproute2 package)
+- **Root privileges** (sudo access)
+
+### Install Dependencies
 ```bash
-python mac_changer.py --interface "Wi-Fi" --restore
+# Ubuntu/Debian
+sudo apt update && sudo apt install iproute2
+
+# CentOS/RHEL/Fedora
+sudo yum install iproute2    # or dnf install iproute2
 ```
 
-### 🕐 Automatic Scheduler (NEW!)
-
-The MAC changer now includes an automatic scheduler for continuous MAC address rotation:
-
-#### Quick Setup & Start
+### Find Your Interface
 ```bash
-# 1. Configure scheduler (select interface and timing)
-python mac_changer.py --scheduler-config
+python3 mac_changer.py --list
+```
+**Output:**
+```
+📡 Network Interfaces (Linux):
+==================================================
+🔌 eth0
+   MAC: 08:00:27:12:34:56
 
-# 2. Start continuous MAC changing (requires admin/sudo)
-python mac_changer.py --scheduler-start
+🔌 wlan0
+   MAC: 02:42:AC:11:00:02
 ```
 
-#### Scheduler Features
-- **🔄 Continuous Operation**: Runs until stopped with Ctrl+C
-- **⏱️ Flexible Timing**: Fixed intervals (e.g., every 5 minutes) or random intervals (e.g., 2-10 minutes)
-- **📊 Live Monitoring**: Shows current MAC address and countdown to next change
-- **🛡️ Auto-Elevation**: Automatically requests admin privileges
-- **📝 Logging**: All changes logged with timestamps
-
-#### Scheduler Commands
+### Change MAC Address
 ```bash
-# Configure settings (interface, timing mode, intervals)
-python mac_changer.py --scheduler-config
+# Use specific MAC
+sudo python3 mac_changer.py --interface eth0 --mac 02:AA:BB:CC:DD:EE
 
-# Start automatic MAC changing (continuous until Ctrl+C)
-python mac_changer.py --scheduler-start
+# Use random MAC
+sudo python3 mac_changer.py --interface wlan0 --random
 
-# Check scheduler status
-python mac_changer.py --scheduler-status
-
-# Stop running scheduler
-python mac_changer.py --scheduler-stop
+# Script will auto-request sudo if needed
+python3 mac_changer.py --interface eth0 --random
 ```
 
-#### Example Output
-```
-🚀 MAC Scheduler Started - Press Ctrl+C to stop
-📡 Interface: Wi-Fi
-⏱️ Mode: random_time
-🎲 Random: 2-10 minutes
-
-🔄 [14:30:15] Current MAC: 00:E0:4C:B8:38:2F
-🎯 Changing to: 02:A1:B2:C3:D4:E5
-⏰ Next change: 14:35:23 (5m 8s)
-📍 [14:30:20] Current: 02:A1:B2:C3:D4:E5 | Next in: 05:03
+### Launcher Script (Optional)
+```bash
+chmod +x mac_changer.sh
+./mac_changer.sh
 ```
 
-### Command-Line Options
+### Linux Notes
+- Works with most Ethernet and Wi-Fi adapters
+- May require network manager restart: `sudo systemctl restart NetworkManager`
+- Some virtual interfaces (Docker, VPN) may not support MAC changing
+- Changes are temporary (reset on reboot)
 
-| Option | Short | Description |
-|--------|-------|-------------|
-| `--interface` | `-i` | Network interface name (e.g., eth0, Wi-Fi, en0) |
-| `--mac` | `-m` | New MAC address (format: XX:XX:XX:XX:XX:XX or XX-XX-XX-XX-XX-XX) |
-| `--random` | `-r` | Generate and use a random MAC address |
-| `--list` | `-l` | List all available network interfaces |
-| `--current` | `-c` | Show current MAC address of specified interface |
-| `--restore` | | Restore original MAC address |
-| `--help` | `-h` | Show help message and exit |
+---
 
-## Platform-Specific Notes
+## 🍎 macOS Usage
 
-### Windows
-- **Privileges**: Automatically prompts to restart with Administrator privileges if needed
-- **Methods used**:
-  1. PowerShell `Set-NetAdapter` command (modern method)
-  2. Registry modification for advanced cases
-  3. Manual Device Manager instructions (fallback)
-- **Interface names**: Usually "Wi-Fi", "Ethernet", "Local Area Connection", etc.  
-- **Hardware compatibility**: 
-  - ✅ Ethernet adapters (90% success rate)
-  - ⚠️ Built-in Wi-Fi (70% success rate) 
-  - ❌ USB Wi-Fi adapters (20% success rate)
-- **Note**: USB Wi-Fi adapters often don't support MAC changing due to firmware limitations
-- **Troubleshooting**: See `WINDOWS_MAC_CHANGING.md` for detailed Windows-specific guidance
+### Requirements
+- **macOS 10.12+**
+- **Administrator privileges** (sudo access)
 
-### Linux
-- **Privileges**: Automatically prompts to restart with sudo if root privileges needed
-- **Methods used**:
-  1. `ip link` commands (modern Linux distributions)
-  2. `ifconfig` commands (fallback for older systems)
-- **Interface names**: Usually eth0, wlan0, enp0s3, etc.
-- **Note**: Interface will be temporarily brought down and back up
+### Find Your Interface
+```bash
+python3 mac_changer.py --list
+```
+**Output:**
+```
+📡 Network Interfaces (Darwin):
+==================================================
+🔌 en0
+   MAC: A4:83:E7:12:34:56
 
-### macOS
-- **Privileges**: Automatically prompts to restart with sudo if root privileges needed
-- **Methods used**:
-  1. `ifconfig` with ether parameter
-  2. Airport framework for Wi-Fi interfaces
-- **Interface names**: Usually en0, en1, etc.
-- **Note**: Wi-Fi interfaces may require reconnection to networks
+🔌 en1
+   MAC: 02:42:AC:11:00:02
+```
 
-## Examples
+### Change MAC Address
+```bash
+# Use specific MAC
+sudo python3 mac_changer.py --interface en0 --mac 02:AA:BB:CC:DD:EE
+
+# Use random MAC
+sudo python3 mac_changer.py --interface en0 --random
+
+# Script will auto-request sudo if needed
+python3 mac_changer.py --interface en0 --random
+```
+
+### macOS Notes
+- `en0` is typically the main Ethernet/Wi-Fi interface
+- May require disconnecting from Wi-Fi networks
+- System Integrity Protection (SIP) may restrict some adapters
+- Changes are temporary (reset on reboot or network restart)
+
+---
+
+## 📋 Command Reference
+
+| Command | Description | Example |
+|---------|-------------|---------|
+| `--list` or `-l` | List all network interfaces | `python mac_changer.py -l` |
+| `--interface` or `-i` | Specify network interface | `python mac_changer.py -i eth0` |
+| `--mac` or `-m` | Set specific MAC address | `python mac_changer.py -i eth0 -m 02:11:22:33:44:55` |
+| `--random` or `-r` | Generate random MAC | `python mac_changer.py -i eth0 -r` |
+| `--current` or `-c` | Show current MAC | `python mac_changer.py -i eth0 -c` |
+| `--help` or `-h` | Show help message | `python mac_changer.py -h` |
+
+## 🔧 Installation
+
+### Method 1: Download
+1. Download `mac_changer.py`
+2. Run with Python 3.6+
+
+### Method 2: Clone Repository
+```bash
+git clone https://github.com/AnkitTalaviya/MAC-Changer.git
+cd MAC-Changer
+python mac_changer.py --help
+```
+
+### Requirements
+- **Python 3.6+** (no additional packages needed)
+- **Admin/root privileges** (automatically requested)
+
+## ⚠️ Important Notes
+
+### Legal & Ethical Use
+- **Use responsibly** and in compliance with local laws
+- **Network policies** may prohibit MAC address changes
+- **Educational purposes** - understand your network's terms of service
+
+### Limitations
+- **Temporary changes** - MAC resets on reboot/network restart  
+- **Hardware dependent** - not all adapters support MAC changing
+- **USB adapters** - limited support (especially on Windows)
+- **Corporate networks** - may detect and block MAC changes
+
+### Troubleshooting
+
+#### "Administrator privileges required"
+- **Windows**: Run as Administrator or use `mac_changer_admin.bat`
+- **Linux/macOS**: Use `sudo` or let script auto-elevate
+
+#### "Interface not found"  
+- Run `--list` to see available interfaces
+- Check interface name spelling and case sensitivity
+
+#### "MAC change failed"
+- Adapter may not support MAC changing
+- Try with a different network adapter
+- On Linux: restart NetworkManager
+
+#### "Permission denied"
+- Ensure you have admin/root privileges
+- Some corporate systems restrict MAC changes
+
+## 📝 Examples
 
 ### Windows Examples
-```bash
+```powershell
 # List interfaces
 python mac_changer.py --list
 
-# Change Wi-Fi MAC to specific address (run as Administrator)
-python mac_changer.py --interface "Wi-Fi" --mac "02:34:56:78:9A:BC"
+# Change Wi-Fi MAC to random
+python mac_changer.py --interface "Wi-Fi" --random
 
-# Generate random MAC for Ethernet (run as Administrator)
-python mac_changer.py --interface "Ethernet" --random
-
-# Check current MAC
-python mac_changer.py --interface "Wi-Fi" --current
+# Change Ethernet MAC to specific
+python mac_changer.py --interface "Ethernet" --mac 02:11:22:33:44:55
 ```
 
-### Linux Examples
+### Linux Examples  
 ```bash
 # List interfaces
 python3 mac_changer.py --list
 
-# Change ethernet MAC to specific address
-sudo python3 mac_changer.py --interface eth0 --mac "02:34:56:78:9A:BC"
+# Change eth0 MAC to random
+sudo python3 mac_changer.py --interface eth0 --random
 
-# Generate random MAC for Wi-Fi
-sudo python3 mac_changer.py --interface wlan0 --random
-
-# Restore original MAC
-sudo python3 mac_changer.py --interface eth0 --restore
+# Change wlan0 MAC to specific
+sudo python3 mac_changer.py --interface wlan0 --mac 02:11:22:33:44:55
 ```
 
 ### macOS Examples
 ```bash
-# List interfaces
+# List interfaces  
 python3 mac_changer.py --list
 
-# Change Wi-Fi MAC to specific address
-sudo python3 mac_changer.py --interface en0 --mac "02:34:56:78:9A:BC"
+# Change en0 MAC to random
+sudo python3 mac_changer.py --interface en0 --random
 
-# Generate random MAC for Ethernet
-sudo python3 mac_changer.py --interface en1 --random
+# Change en1 MAC to specific  
+sudo python3 mac_changer.py --interface en1 --mac 02:11:22:33:44:55
 ```
 
-## Hardware Compatibility
+## 🤝 Contributing
 
-### Windows Compatibility Matrix
-| Adapter Type | Success Rate | Notes |
-|-------------|-------------|--------|
-| **Ethernet (Built-in)** | ✅ 90% | Intel, Realtek, Broadcom wired adapters |
-| **Wi-Fi (Built-in)** | ⚠️ 70% | Intel Wi-Fi cards usually work |
-| **Wi-Fi (PCIe Cards)** | ⚠️ 70% | Depends on driver support |
-| **USB Wi-Fi Adapters** | ❌ 20% | Often firmware-locked |
-| **USB Ethernet** | ⚠️ 50% | Mixed results by manufacturer |
+Issues and pull requests welcome! Please ensure cross-platform compatibility.
 
-### Linux/macOS Compatibility  
-| Adapter Type | Success Rate | Notes |
-|-------------|-------------|--------|
-| **Ethernet** | ✅ 95% | Nearly universal support |
-| **Wi-Fi** | ✅ 85% | Most adapters supported |
-| **USB Adapters** | ✅ 80% | Better driver flexibility |
+## 📜 License
 
-**💡 Tip**: Use `python mac_changer.py --interface "InterfaceName" --debug` to check your specific adapter's compatibility.
+MIT License - Use freely with attribution.
 
-## Security Considerations
+---
 
-- **Locally Administered Addresses**: Generated random MACs use locally administered address format (second bit of first octet set to 1)
-- **Unicast Addresses**: All generated MACs are unicast (first bit of first octet set to 0)
-- **Privacy**: Changing MAC addresses can help protect privacy on public networks
-- **Legal**: Ensure MAC address changing complies with your local laws and network policies
-
-## Troubleshooting
-
-### Common Issues
-
-1. **"Administrator/root privileges required"**
-   - The script will automatically prompt to restart with elevated privileges
-   - **Manual method - Windows**: Run Command Prompt/PowerShell as Administrator
-   - **Manual method - Linux/macOS**: Use `sudo` before the command
-
-2. **"Interface not found"**
-   - Run `python mac_changer.py --list` to see available interfaces
-   - Use exact interface name (case-sensitive)
-
-3. **MAC change appears successful but doesn't take effect**
-   - **Windows**: May require network adapter restart or reboot
-   - **Linux**: Try `sudo systemctl restart NetworkManager`
-   - **macOS**: Try disconnecting and reconnecting to network
-
-4. **Command not found errors**
-   - **Linux**: Install `net-tools` package for ifconfig: `sudo apt install net-tools`
-   - **Windows**: Ensure PowerShell and netsh are available (should be by default)
-
-### Platform-Specific Troubleshooting
-
-#### Windows
-- If netsh method fails, the script provides manual Device Manager steps
-- Some network adapters may not support MAC address changing
-- Virtual network adapters may have different behaviors
-
-#### Linux
-- Ensure NetworkManager or systemd-networkd isn't overriding changes
-- Some wireless drivers may reset MAC on interface restart
-- Use `ip link show` to verify interface names
-
-#### macOS
-- Recent macOS versions have increased restrictions on MAC changing
-- System Integrity Protection (SIP) may prevent some changes
-- Airport utility may be required for some Wi-Fi adapters
-
-## License
-
-This project is provided as-is for educational and legitimate security testing purposes. Users are responsible for ensuring compliance with applicable laws and regulations.
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit pull requests or open issues for bugs and feature requests.
-
-## Changelog
-
-- **v1.1.0**: Enhanced user experience
-  - **NEW**: Automatic privilege elevation with user prompt
-  - **NEW**: Smart detection of elevation attempts to prevent infinite loops
-  - Improved Windows interface detection accuracy
-  - Enhanced error handling and user feedback
-
-- **v1.0.0**: Initial release with cross-platform support
-  - Windows, Linux, and macOS compatibility
-  - Multiple MAC changing methods
-  - Command-line interface
-  - Comprehensive error handling
+**⚡ Simple, Clean, Cross-Platform MAC Address Changer ⚡**
