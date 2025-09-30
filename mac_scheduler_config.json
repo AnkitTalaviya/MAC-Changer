@@ -1,12 +1,11 @@
 {
   "interface": "Wi-Fi",
-  "mode": "fixed_interval",
-  "fixed_interval_minutes": 1,
-  "random_min_minutes": 15,
-  "random_max_minutes": 60,
+  "mode": "random_time",
+  "fixed_interval_minutes": 30,
+  "random_min_minutes": 2,
+  "random_max_minutes": 4,
   "use_random_mac": true,
   "custom_mac_list": [],
   "enabled": true,
-  "start_time": "15:07",
-  "end_time": "15:10"
+  "continuous_mode": true
 }

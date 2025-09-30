@@ -93,6 +93,54 @@ python mac_changer.py --interface "Wi-Fi" --current
 python mac_changer.py --interface "Wi-Fi" --restore
 ```
 
+### 🕐 Automatic Scheduler (NEW!)
+
+The MAC changer now includes an automatic scheduler for continuous MAC address rotation:
+
+#### Quick Setup & Start
+```bash
+# 1. Configure scheduler (select interface and timing)
+python mac_changer.py --scheduler-config
+
+# 2. Start continuous MAC changing (requires admin/sudo)
+python mac_changer.py --scheduler-start
+```
+
+#### Scheduler Features
+- **🔄 Continuous Operation**: Runs until stopped with Ctrl+C
+- **⏱️ Flexible Timing**: Fixed intervals (e.g., every 5 minutes) or random intervals (e.g., 2-10 minutes)
+- **📊 Live Monitoring**: Shows current MAC address and countdown to next change
+- **🛡️ Auto-Elevation**: Automatically requests admin privileges
+- **📝 Logging**: All changes logged with timestamps
+
+#### Scheduler Commands
+```bash
+# Configure settings (interface, timing mode, intervals)
+python mac_changer.py --scheduler-config
+
+# Start automatic MAC changing (continuous until Ctrl+C)
+python mac_changer.py --scheduler-start
+
+# Check scheduler status
+python mac_changer.py --scheduler-status
+
+# Stop running scheduler
+python mac_changer.py --scheduler-stop
+```
+
+#### Example Output
+```
+🚀 MAC Scheduler Started - Press Ctrl+C to stop
+📡 Interface: Wi-Fi
+⏱️ Mode: random_time
+🎲 Random: 2-10 minutes
+
+🔄 [14:30:15] Current MAC: 00:E0:4C:B8:38:2F
+🎯 Changing to: 02:A1:B2:C3:D4:E5
+⏰ Next change: 14:35:23 (5m 8s)
+📍 [14:30:20] Current: 02:A1:B2:C3:D4:E5 | Next in: 05:03
+```
+
 ### Command-Line Options
 
 | Option | Short | Description |

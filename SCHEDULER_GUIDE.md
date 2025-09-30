@@ -16,20 +16,19 @@ This opens an interactive configuration where you can set:
 - **Time Range**: When the scheduler should be active
 - **Intervals**: How often to change MAC addresses
 
-### 2. Start the Scheduler
+### 2. Start the Scheduler (Continuous Mode)
 ```bash
 python mac_changer.py --scheduler-start
 ```
+**Note**: Runs continuously until you press Ctrl+C. Shows live MAC monitoring!
 
-### 3. Check Status
+### 3. Check Status (Optional)
 ```bash
 python mac_changer.py --scheduler-status
 ```
 
-### 4. Stop the Scheduler
-```bash
-python mac_changer.py --scheduler-stop
-```
+### 4. Stop with Ctrl+C
+Simply press `Ctrl+C` while the scheduler is running to stop it gracefully.
 
 ## 🔧 Configuration Options
 
@@ -45,10 +44,10 @@ python mac_changer.py --scheduler-stop
 - Unpredictable timing for enhanced privacy
 - Good for: Maximum privacy, avoiding pattern detection
 
-### Time Scheduling
-- **Start Time**: When to begin automatic changes (e.g., 08:00)
-- **End Time**: When to stop automatic changes (e.g., 18:00)
-- Supports overnight schedules (e.g., 22:00 to 06:00)
+### Continuous Operation
+- **Always Active**: Runs 24/7 until manually stopped with Ctrl+C
+- **Immediate Start**: No time restrictions, begins changing MAC addresses right away
+- **Live Monitoring**: Shows real-time current MAC address and countdown to next change
 
 ### MAC Address Sources
 - **Random MAC**: Generates new random MAC addresses

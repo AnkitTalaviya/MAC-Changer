@@ -378,13 +378,12 @@ class MACScheduler:
             "interface": "Wi-Fi",
             "mode": "random_time",  # "fixed_interval" or "random_time"
             "fixed_interval_minutes": 30,
-            "random_min_minutes": 15,
-            "random_max_minutes": 60,
+            "random_min_minutes": 5,
+            "random_max_minutes": 15,
             "use_random_mac": True,
             "custom_mac_list": [],
-            "enabled": False,
-            "start_time": "00:00",
-            "end_time": "23:59"
+            "enabled": True,
+            "continuous_mode": True
         }
         
         try:
@@ -410,15 +409,8 @@ class MACScheduler:
             self.logger.error(f"Failed to save config: {e}")
     
     def is_within_schedule(self) -> bool:
-        """Check if current time is within scheduled hours"""
-        now = datetime.now().time()
-        start_time = datetime.strptime(self.config["start_time"], "%H:%M").time()
-        end_time = datetime.strptime(self.config["end_time"], "%H:%M").time()
-        
-        if start_time <= end_time:
-            return start_time <= now <= end_time
-        else:  # Overnight schedule (e.g., 22:00 to 06:00)
-            return now >= start_time or now <= end_time
+        """Check if scheduler should be active (always true in continuous mode)"""
+        return self.config.get("continuous_mode", True)
     
     def get_next_mac(self) -> str:
         """Get next MAC address to use"""
@@ -440,12 +432,13 @@ class MACScheduler:
     
     def change_mac_scheduled(self):
         """Perform scheduled MAC address change"""
-        if not self.is_within_schedule():
-            self.logger.info("Outside scheduled hours, skipping MAC change")
-            return
-        
         interface = self.config["interface"]
         new_mac = self.get_next_mac()
+        
+        # Show current MAC before change
+        current_mac = self.mac_changer.get_current_mac(interface)
+        print(f"\n🔄 [{datetime.now().strftime('%H:%M:%S')}] Current MAC: {current_mac}")
+        print(f"🎯 Changing to: {new_mac}")
         
         self.logger.info(f"Attempting scheduled MAC change for {interface} to {new_mac}")
         
@@ -458,8 +451,17 @@ class MACScheduler:
             self.logger.warning(f"❌ MAC change failed for interface {interface}")
     
     def scheduler_loop(self):
-        """Main scheduler loop"""
-        self.logger.info("MAC scheduler started")
+        """Main scheduler loop with live monitoring"""
+        print(f"\n🚀 MAC Scheduler Started - Press Ctrl+C to stop")
+        print(f"📡 Interface: {self.config['interface']}")
+        print(f"⏱️  Mode: {self.config['mode']}")
+        if self.config['mode'] == 'fixed_interval':
+            print(f"🕐 Interval: {self.config['fixed_interval_minutes']} minutes")
+        else:
+            print(f"🎲 Random: {self.config['random_min_minutes']}-{self.config['random_max_minutes']} minutes")
+        print("=" * 60)
+        
+        self.logger.info("MAC scheduler started in continuous mode")
         
         while self.is_running:
             try:
@@ -470,18 +472,31 @@ class MACScheduler:
                 next_interval = self.calculate_next_interval()
                 next_change = datetime.now() + timedelta(seconds=next_interval)
                 
+                print(f"⏰ Next change: {next_change.strftime('%H:%M:%S')} ({next_interval//60}m {next_interval%60}s)")
                 self.logger.info(f"Next MAC change scheduled for: {next_change.strftime('%H:%M:%S')} ({next_interval//60} minutes)")
                 
-                # Wait for next interval (check every 30 seconds for stop signal)
+                # Wait for next interval with live countdown
                 elapsed = 0
                 while elapsed < next_interval and self.is_running:
-                    time.sleep(min(30, next_interval - elapsed))
-                    elapsed += 30
+                    remaining = next_interval - elapsed
+                    mins, secs = divmod(remaining, 60)
+                    
+                    # Show current MAC every 30 seconds
+                    if elapsed % 30 == 0:
+                        current_mac = self.mac_changer.get_current_mac(self.config['interface'])
+                        print(f"\r📍 [{datetime.now().strftime('%H:%M:%S')}] Current: {current_mac} | Next in: {mins:02d}:{secs:02d}", end='', flush=True)
+                    
+                    time.sleep(5)
+                    elapsed += 5
+                
+                print()  # New line after countdown
                     
             except Exception as e:
+                print(f"\n❌ Error: {e}")
                 self.logger.error(f"Error in scheduler loop: {e}")
                 time.sleep(60)  # Wait 1 minute before retrying
         
+        print("\n🛑 MAC scheduler stopped")
         self.logger.info("MAC scheduler stopped")
     
     def start(self) -> bool:
@@ -541,7 +556,7 @@ class MACScheduler:
         else:
             print(f"Random interval: {self.config['random_min_minutes']}-{self.config['random_max_minutes']} minutes")
         
-        print(f"Schedule: {self.config['start_time']} - {self.config['end_time']}")
+        print(f"Mode: {'Continuous (24/7)' if self.config.get('continuous_mode', True) else 'Scheduled'}")
         print(f"MAC source: {'Random' if self.config['use_random_mac'] else 'Custom list'}")
         
         if not self.config['use_random_mac'] and self.config['custom_mac_list']:
@@ -642,42 +657,12 @@ class MACScheduler:
                 except ValueError:
                     print("❌ Please enter a valid number")
         
-        # Schedule hours
-        while True:
-            start_time = input(f"\nStart time (HH:MM) [{self.config['start_time']}]: ").strip()
-            if not start_time:
-                break
-            try:
-                datetime.strptime(start_time, "%H:%M")
-                self.config['start_time'] = start_time
-                break
-            except ValueError:
-                print("❌ Invalid time format (use HH:MM)")
+        # Set continuous mode
+        self.config['continuous_mode'] = True
+        self.config['enabled'] = True
         
-        while True:
-            end_time = input(f"\nEnd time (HH:MM) [{self.config['end_time']}]: ").strip()
-            if not end_time:
-                break
-            try:
-                datetime.strptime(end_time, "%H:%M")
-                self.config['end_time'] = end_time
-                break
-            except ValueError:
-                print("❌ Invalid time format (use HH:MM)")
-        
-        # Enable/disable
-        while True:
-            enabled = input(f"\nEnable scheduler? (y/n) [{'y' if self.config['enabled'] else 'n'}]: ").strip().lower()
-            if not enabled:
-                break
-            if enabled in ['y', 'yes']:
-                self.config['enabled'] = True
-                break
-            elif enabled in ['n', 'no']:
-                self.config['enabled'] = False
-                break
-            else:
-                print("❌ Please enter y or n")
+        print(f"\n✅ Scheduler configured for continuous operation")
+        print(f"🔄 Will start immediately and run until stopped with Ctrl+C")
         
         # Save configuration
         self.save_config()
@@ -778,16 +763,12 @@ def main():
                 return 1
         
         if scheduler.start():
-            if args.daemon:
-                print("🔄 Running in daemon mode... Press Ctrl+C to stop")
-                try:
-                    while scheduler.is_running:
-                        time.sleep(1)
-                except KeyboardInterrupt:
-                    scheduler.stop()
-                    print("\n🛑 Daemon stopped by user")
-            else:
-                print("🔄 Scheduler started. Use --scheduler-stop to stop or --scheduler-status for info")
+            # Always run in daemon mode with live monitoring
+            try:
+                while scheduler.is_running:
+                    time.sleep(1)
+            except KeyboardInterrupt:
+                scheduler.stop()
         return 0
     elif args.scheduler_stop:
         scheduler.stop()
